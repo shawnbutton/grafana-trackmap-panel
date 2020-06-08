@@ -308,17 +308,26 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
     log("onDataReceived");
     this.setupMap();
 
-    if (data.length === 0 || data.length !== 2) {
+    if (data.length !== 1) {
       // No data or incorrect data, show a world map and abort
       this.leafMap.setView([0, 0], 1);
       return;
     }
 
-    // Asumption is that there are an equal number of properly matched timestamps
-    // TODO: proper joining by timestamp?
     this.coords.length = 0;
-    const lats = data[0].datapoints;
-    const lons = data[1].datapoints;
+
+    data = data[0].datapoints
+
+    const lats = data.map(element => {
+      return [element.position.lat, element["@timestamp"]]
+    });
+
+    const lons = data.map(element => {
+      return [element.position.lng, element["@timestamp"]]
+    });
+
+    // Asumption is that there are an equal number of properly matched timestamps
+
     for (let i = 0; i < lats.length; i++) {
       if (lats[i][0] == null || lons[i][0] == null ||
           lats[i][1] !== lons[i][1]) {
@@ -330,6 +339,7 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
         timestamp: lats[i][1]
       });
     }
+
     this.addDataToMap();
   }
 
